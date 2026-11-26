@@ -69,7 +69,7 @@ async function embedImageBytes(pdfDoc: PDFDocument, bytes: Uint8Array): Promise<
   return pdfDoc.embedPng(pngBytes);
 }
 
-function isCoverPage(page: StarNotePage, idx: number): boolean {
+export function isCoverPage(page: StarNotePage, idx: number): boolean {
   if (idx !== 0) return false;
   const layout = page.templateConfig?.layoutType;
   const res = page.templateConfig?.resName ?? '';

@@ -21,6 +21,7 @@ import type {
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
 
 const loadedPdfCache = new WeakMap<Uint8Array, Promise<pdfjsLib.PDFDocumentProxy>>();
+const canvasRenderSeq = new WeakMap<HTMLCanvasElement, number>();
 
 function getPdfDocument(bytes: Uint8Array): Promise<pdfjsLib.PDFDocumentProxy> {
   let promise = loadedPdfCache.get(bytes);
@@ -39,15 +40,25 @@ export async function renderPageToCanvas(
   options: ExportOptions,
   targetWidthPx = 900
 ): Promise<void> {
+  const seq = (canvasRenderSeq.get(canvas) ?? 0) + 1;
+  canvasRenderSeq.set(canvas, seq);
+  const isStale = () => canvasRenderSeq.get(canvas) !== seq;
+
   const bounds = getPageBounds(page, options.includeMargins);
   const pageW = Math.max(1, bounds.right - bounds.left);
   const pageH = Math.max(1, bounds.bottom - bounds.top);
   const scale = targetWidthPx / pageW;
 
-  canvas.width = Math.round(pageW * scale);
-  canvas.height = Math.round(pageH * scale);
+  const targetW = Math.round(pageW * scale);
+  const targetH = Math.round(pageH * scale);
 
-  const ctx = canvas.getContext('2d');
+  // Render into a dedicated offscreen buffer so concurrent calls (e.g. React StrictMode)
+  // never corrupt the visible canvas's 2D transform stack or clear mid-render.
+  const work = document.createElement('canvas');
+  work.width = targetW;
+  work.height = targetH;
+
+  const ctx = work.getContext('2d');
   if (!ctx) return;
 
   ctx.save();
@@ -80,9 +91,11 @@ export async function renderPageToCanvas(
   if (page.pageType === 'import_pdf' && doc.pdfBytes && page.pdfPageIndex !== undefined) {
     try {
       const pdfDoc = await getPdfDocument(doc.pdfBytes);
+      if (isStale()) return;
       const pdfPageNum = page.pdfPageIndex + 1;
       if (pdfPageNum >= 1 && pdfPageNum <= pdfDoc.numPages) {
         const pdfPage = await pdfDoc.getPage(pdfPageNum);
+        if (isStale()) return;
         const vp1 = pdfPage.getViewport({ scale: 1 });
         const pdfScale = (cw * scale) / vp1.width;
         const vp = pdfPage.getViewport({ scale: pdfScale });
@@ -92,6 +105,7 @@ export async function renderPageToCanvas(
         const octx = offscreen.getContext('2d');
         if (octx) {
           await pdfPage.render({ canvasContext: octx, viewport: vp }).promise;
+          if (isStale()) return;
           ctx.drawImage(offscreen, cr.left, cr.top, cw, ch);
         }
       }
@@ -100,6 +114,7 @@ export async function renderPageToCanvas(
     }
   } else {
     const tplImg = await resolveTemplateImage(doc, page);
+    if (isStale()) return;
     if (tplImg) {
       ctx.drawImage(tplImg, cr.left, cr.top, cw, ch);
     }
@@ -111,9 +126,18 @@ export async function renderPageToCanvas(
       continue;
     }
     await drawShapeOnCanvas(ctx, doc, shape);
+    if (isStale()) return;
   }
 
   ctx.restore();
+
+  if (isStale()) return;
+  canvas.width = targetW;
+  canvas.height = targetH;
+  const outCtx = canvas.getContext('2d');
+  if (outCtx) {
+    outCtx.drawImage(work, 0, 0);
+  }
 }
 
 async function drawShapeOnCanvas(

@@ -20,7 +20,8 @@ import {
   type VirtualFile,
 } from './starnote/backupParser';
 import { renderPageToCanvas } from './starnote/canvasRenderer';
-import { exportDocumentToPdf } from './starnote/pdfExporter';
+import { exportDocumentToPdf, isCoverPage } from './starnote/pdfExporter';
+import { getPageBounds } from './starnote/strokeGeometry';
 import type { ExportOptions, StarNoteDocument, StarNotePage } from './starnote/types';
 
 declare module 'react' {
@@ -188,14 +189,36 @@ export default function App() {
     [docs, previewDocId]
   );
 
+  const previewPages = useMemo(() => {
+    if (!previewDoc) return [];
+    return previewDoc.pages.filter((p, idx) => options.includeCover || !isCoverPage(p, idx));
+  }, [previewDoc, options.includeCover]);
+
+  const previewMaxPageWidth = useMemo(() => {
+    if (previewPages.length === 0) return 1;
+    return Math.max(
+      1,
+      ...previewPages.map((p) => {
+        const b = getPageBounds(p, options.includeMargins);
+        return Math.max(1, b.right - b.left);
+      })
+    );
+  }, [previewPages, options.includeMargins]);
+
   useEffect(() => {
-    if (!previewDoc || !previewCanvasRef.current) return;
-    const page = previewDoc.pages[previewPageIdx];
+    if (previewPageIdx >= previewPages.length && previewPages.length > 0) {
+      setPreviewPageIdx(previewPages.length - 1);
+    }
+  }, [previewPages.length, previewPageIdx]);
+
+  useEffect(() => {
+    if (options.continuousScroll || !previewDoc || !previewCanvasRef.current) return;
+    const page = previewPages[previewPageIdx];
     if (!page) return;
     renderPageToCanvas(previewCanvasRef.current, previewDoc, page, options, 920).catch((err) =>
       console.error('Preview render failed:', err)
     );
-  }, [previewDoc, previewPageIdx, options]);
+  }, [options, previewDoc, previewPages, previewPageIdx]);
 
   const handleExportOne = async (doc: StarNoteDocument) => {
     setExportingId(doc.id);
@@ -431,7 +454,7 @@ export default function App() {
             <div className="modal-title-group">
               <strong>{previewDoc.title}</strong>
               <span className="modal-meta">
-                {previewDoc.pages.length} pages · {previewDoc.totalActiveShapes} elements
+                {previewPages.length} pages · {previewDoc.totalActiveShapes} elements
               </span>
             </div>
 
@@ -446,14 +469,14 @@ export default function App() {
                   <ChevronLeft size={16} />
                 </button>
                 <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                  Page {previewDoc.pages.length ? previewPageIdx + 1 : 0} / {previewDoc.pages.length}
+                  Page {previewPages.length ? previewPageIdx + 1 : 0} / {previewPages.length}
                 </span>
                 <button
                   className="btn"
                   style={{ padding: '4px 8px' }}
-                  disabled={previewPageIdx >= previewDoc.pages.length - 1}
+                  disabled={previewPageIdx >= previewPages.length - 1}
                   onClick={() =>
-                    setPreviewPageIdx((i) => Math.min(previewDoc.pages.length - 1, i + 1))
+                    setPreviewPageIdx((i) => Math.min(previewPages.length - 1, i + 1))
                   }
                 >
                   <ChevronRight size={16} />
@@ -482,15 +505,16 @@ export default function App() {
           </div>
 
           <div className="modal-body" onClick={(e) => e.stopPropagation()}>
-            {previewDoc.pages.length > 0 ? (
+            {previewPages.length > 0 ? (
               options.continuousScroll ? (
                 <div className="preview-scroll-stack">
-                  {previewDoc.pages.map((page, idx) => (
+                  {previewPages.map((page, idx) => (
                     <PreviewPageCanvas
-                      key={page.id || idx}
+                      key={`${previewDoc.id}-${page.id || idx}`}
                       doc={previewDoc}
                       page={page}
                       pageNumber={idx + 1}
+                      maxPageWidth={previewMaxPageWidth}
                       options={options}
                     />
                   ))}
@@ -501,9 +525,10 @@ export default function App() {
                 </div>
               )
             ) : (
-              <div style={{ color: '#fff', marginTop: 40 }}>
-                This notebook folder has no synced pages (it may have been deleted or only contains
-                a cached thumbnail).
+              <div style={{ color: '#fff', marginTop: 40, textAlign: 'center' }}>
+                {previewDoc.pages.length > 0
+                  ? 'All pages are excluded by the current export options (e.g. cover page hidden).'
+                  : 'This notebook folder has no synced pages (it may have been deleted or only contains a cached thumbnail).'}
               </div>
             )}
           </div>
@@ -517,16 +542,23 @@ function PreviewPageCanvas({
   doc,
   page,
   pageNumber,
+  maxPageWidth,
   options,
 }: {
   doc: StarNoteDocument;
   page: StarNotePage;
   pageNumber: number;
+  maxPageWidth: number;
   options: ExportOptions;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [visible, setVisible] = useState(pageNumber <= 3);
+
+  const bounds = getPageBounds(page, options.includeMargins);
+  const pageW = Math.max(1, bounds.right - bounds.left);
+  const pageH = Math.max(1, bounds.bottom - bounds.top);
+  const widthPct = Math.min(100, Math.max(20, (pageW / maxPageWidth) * 100));
 
   useEffect(() => {
     if (visible) return;
@@ -539,7 +571,7 @@ function PreviewPageCanvas({
           observer.disconnect();
         }
       },
-      { rootMargin: '600px 0px' }
+      { rootMargin: '800px 0px' }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -547,16 +579,22 @@ function PreviewPageCanvas({
 
   useEffect(() => {
     if (!visible || !canvasRef.current) return;
-    const targetWidth = typeof window !== 'undefined' && window.innerWidth < 640 ? 720 : 920;
+    const targetWidth = Math.max(480, Math.round(920 * (pageW / maxPageWidth)));
     renderPageToCanvas(canvasRef.current, doc, page, options, targetWidth).catch((err) =>
       console.error('Continuous preview render failed:', err)
     );
-  }, [visible, doc, page, options]);
+  }, [visible, doc, page, options, pageW, maxPageWidth]);
 
   return (
-    <div ref={wrapRef} className="preview-canvas-wrap preview-page-slot">
+    <div
+      ref={wrapRef}
+      className="preview-canvas-wrap preview-page-slot"
+      style={{
+        width: `${widthPct}%`,
+        aspectRatio: `${pageW} / ${pageH}`,
+      }}
+    >
       <canvas ref={canvasRef} />
-      <span className="preview-page-tag">Page {pageNumber}</span>
     </div>
   );
 }
