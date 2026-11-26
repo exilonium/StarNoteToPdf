@@ -120,7 +120,7 @@ export default function App() {
     includeCover: true,
     includeMargins: true,
     includeExcerpts: true,
-    continuousScroll: true,
+    continuousScroll: false,
   });
 
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -633,7 +633,7 @@ function DocCard({
 
   useEffect(() => {
     if (thumbUrl || !thumbCanvasRef.current || doc.pages.length === 0) return;
-    renderPageToCanvas(thumbCanvasRef.current, doc, doc.pages[0], options, 360).catch(() => {});
+    renderPageToCanvas(thumbCanvasRef.current, doc, doc.pages[0], options, 360).catch(() => { });
   }, [thumbUrl, doc, options]);
 
   return (
