@@ -1,0 +1,195 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.0,
+              195.0
+            ],
+            [
+              5.0,
+              0.0
+            ]
+          ],
+          [
+            [
+              5.0,
+              195.0
+            ],
+            [
+              200.0,
+              195.0
+            ]
+          ],
+          [
+            [
+              5.0,
+              195.0
+            ],
+            [
+              140.0,
+              60.0
+            ]
+          ]
+        ],
+        "properties": {
+          "drawOrigin": "LEFT_TOP",
+          "forceFullFit": false,
+          "ignoreFirstColumn": false,
+          "ignoreFirstRow": false,
+          "radius": 0.0,
+          "selectionPointType": "SCALE",
+          "subType": "",
+          "underContent": false,
+          "useFixedRatio": false
+        },
+        "type": "MultiLineString",
+        "universalShapeType": "",
+        "version": 4
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              5.0,
+              0.0
+            ],
+            [
+              0.0,
+              5.0
+            ]
+          ],
+          [
+            [
+              5.0,
+              0.0
+            ],
+            [
+              10.0,
+              5.0
+            ]
+          ],
+          [
+            [
+              200.0,
+              195.0
+            ],
+            [
+              195.0,
+              190.0
+            ]
+          ],
+          [
+            [
+              200.0,
+              195.0
+            ],
+            [
+              195.0,
+              200.0
+            ]
+          ],
+          [
+            [
+              140.0,
+              60.0
+            ],
+            [
+              135.0,
+              60.0
+            ]
+          ],
+          [
+            [
+              140.0,
+              60.0
+            ],
+            [
+              140.0,
+              65.0
+            ]
+          ]
+        ],
+        "properties": {
+          "drawOrigin": "LEFT_TOP",
+          "forceFullFit": false,
+          "ignoreFirstColumn": false,
+          "ignoreFirstRow": false,
+          "radius": 0.0,
+          "selectionPointType": "SCALE",
+          "subType": "",
+          "underContent": false,
+          "useFixedRatio": false
+        },
+        "type": "MultiLineString",
+        "universalShapeType": "",
+        "version": 4
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "lineStyle": {
+          "editable": false,
+          "phase": 0.0,
+          "type": 0
+        },
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    }
+  ],
+  "properties": {
+    "drawOrigin": "LEFT_TOP",
+    "forceFullFit": false,
+    "ignoreFirstColumn": false,
+    "ignoreFirstRow": false,
+    "radius": 0.0,
+    "selectionPointType": "SCALE",
+    "subType": "",
+    "underContent": false,
+    "useFixedRatio": false
+  },
+  "type": "FeatureCollection",
+  "universalShapeType": "left_hand_coordinate",
+  "version": 4
+}

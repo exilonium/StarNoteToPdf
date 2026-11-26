@@ -1,0 +1,558 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            20.0,
+            0.0
+          ],
+          [
+            180.0,
+            40.0
+          ],
+          [
+            180.0,
+            180.0
+          ]
+        ],
+        "type": "MultiPoint"
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "fillAttr": {
+          "color": 0,
+          "enableColor": true
+        },
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "Arc",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            20.0,
+            0.0
+          ],
+          [
+            180.0,
+            40.0
+          ],
+          [
+            0.0,
+            180.0
+          ]
+        ],
+        "type": "MultiPoint"
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "fillAttr": {
+          "color": 0,
+          "enableColor": true
+        },
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "Arc",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            0.0,
+            140.0
+          ],
+          [
+            200.0,
+            200.0
+          ],
+          [
+            180.0,
+            180.0
+          ]
+        ],
+        "type": "MultiPoint"
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "fillAttr": {
+          "color": 0,
+          "enableColor": true
+        },
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "lineStyle": {
+          "dashLineIntervals": [
+            0.0,
+            6.0
+          ],
+          "editable": false,
+          "phase": 0.0,
+          "type": 1
+        },
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "Arc",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    },
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            0.0,
+            140.0
+          ],
+          [
+            200.0,
+            200.0
+          ],
+          [
+            0.0,
+            180.0
+          ]
+        ],
+        "type": "MultiPoint"
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "fillAttr": {
+          "color": 0,
+          "enableColor": true
+        },
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "Arc",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    },
+    {
+      "featureCollection": {
+        "features": [
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  20.0,
+                  20.0
+                ],
+                [
+                  180.0,
+                  20.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": 0,
+                "colorTransformMode": 0,
+                "enableColor": false,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  180.0,
+                  20.0
+                ],
+                [
+                  200.0,
+                  170.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": -16777216,
+                "colorTransformMode": 0,
+                "enableColor": true,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  200.0,
+                  170.0
+                ],
+                [
+                  0.0,
+                  170.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": 0,
+                "colorTransformMode": 0,
+                "enableColor": false,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  0.0,
+                  170.0
+                ],
+                [
+                  20.0,
+                  20.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": -16777216,
+                "colorTransformMode": 0,
+                "enableColor": true,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          }
+        ],
+        "properties": {
+          "drawOrigin": "LEFT_TOP",
+          "forceFullFit": false,
+          "ignoreFirstColumn": false,
+          "ignoreFirstRow": false,
+          "radius": 0.0,
+          "selectionPointType": "SCALE",
+          "subType": "",
+          "underContent": false,
+          "useFixedRatio": false
+        },
+        "type": "FeatureCollection",
+        "universalShapeType": "",
+        "version": 1
+      },
+      "geometry": {
+        "features": [
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  20.0,
+                  20.0
+                ],
+                [
+                  180.0,
+                  20.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": 0,
+                "colorTransformMode": 0,
+                "enableColor": false,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  180.0,
+                  20.0
+                ],
+                [
+                  200.0,
+                  170.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": -16777216,
+                "colorTransformMode": 0,
+                "enableColor": true,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  200.0,
+                  170.0
+                ],
+                [
+                  0.0,
+                  170.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": 0,
+                "colorTransformMode": 0,
+                "enableColor": false,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          },
+          {
+            "geometry": {
+              "coordinates": [
+                [
+                  0.0,
+                  170.0
+                ],
+                [
+                  20.0,
+                  20.0
+                ]
+              ],
+              "type": "LineString"
+            },
+            "properties": {
+              "drawOrigin": "LEFT_TOP",
+              "forceFullFit": false,
+              "ignoreFirstColumn": false,
+              "ignoreFirstRow": false,
+              "radius": 0.0,
+              "selectionPointType": "SCALE",
+              "strokeAttr": {
+                "color": -16777216,
+                "colorTransformMode": 0,
+                "enableColor": true,
+                "roundCorner": true,
+                "width": 2.0
+              },
+              "subType": "",
+              "underContent": false,
+              "useFixedRatio": false
+            },
+            "type": "Feature",
+            "universalShapeType": "",
+            "version": 1
+          }
+        ],
+        "properties": {
+          "drawOrigin": "LEFT_TOP",
+          "forceFullFit": false,
+          "ignoreFirstColumn": false,
+          "ignoreFirstRow": false,
+          "radius": 0.0,
+          "selectionPointType": "SCALE",
+          "subType": "",
+          "underContent": false,
+          "useFixedRatio": false
+        },
+        "type": "FeatureCollection",
+        "universalShapeType": "",
+        "version": 1
+      },
+      "properties": {
+        "drawOrigin": "LEFT_TOP",
+        "fillAttr": {
+          "color": 0,
+          "enableColor": true
+        },
+        "forceFullFit": false,
+        "ignoreFirstColumn": false,
+        "ignoreFirstRow": false,
+        "radius": 0.0,
+        "selectionPointType": "SCALE",
+        "strokeAttr": {
+          "color": -16777216,
+          "colorTransformMode": 0,
+          "enableColor": true,
+          "roundCorner": true,
+          "width": 2.0
+        },
+        "subType": "Surface",
+        "underContent": false,
+        "useFixedRatio": false
+      },
+      "type": "Feature",
+      "universalShapeType": "",
+      "version": 4
+    }
+  ],
+  "properties": {
+    "drawOrigin": "LEFT_TOP",
+    "fillAttr": {
+      "color": 0,
+      "enableColor": true
+    },
+    "forceFullFit": false,
+    "ignoreFirstColumn": false,
+    "ignoreFirstRow": false,
+    "radius": 0.0,
+    "selectionPointType": "SCALE",
+    "subType": "",
+    "underContent": false,
+    "useFixedRatio": false
+  },
+  "type": "FeatureCollection",
+  "universalShapeType": "cone_frustum",
+  "version": 4
+}
