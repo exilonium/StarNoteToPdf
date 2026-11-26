@@ -159,4 +159,6 @@ export interface ExportOptions {
   includeCover: boolean;
   includeMargins: boolean;
   includeExcerpts: boolean;
+  /** Stitch all pages into one tall continuous-scroll PDF page */
+  continuousScroll: boolean;
 }

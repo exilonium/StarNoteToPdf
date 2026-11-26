@@ -107,18 +107,31 @@ export async function exportDocumentToPdf(
     return pdfDoc.save();
   }
 
+  // ── Pre-compute per-page geometry ──────────────────────────────────────────
+  interface PageGeom {
+    page: (typeof pagesToExport)[0];
+    bounds: ReturnType<typeof getPageBounds>;
+    pageW: number;
+    pageH: number;
+    cw: number;
+    ch: number;
+    ptScale: number;
+    embeddedSrcPage?: PDFEmbeddedPage;
+    pdfW: number;
+    pdfH: number;
+  }
+
+  const geoms: PageGeom[] = [];
   for (let i = 0; i < pagesToExport.length; i++) {
     onProgress?.(i + 1, pagesToExport.length);
     const page = pagesToExport[i];
     const bounds = getPageBounds(page, options.includeMargins);
     const pageW = Math.max(1, bounds.right - bounds.left);
     const pageH = Math.max(1, bounds.bottom - bounds.top);
-
     const cr = page.contentRect;
     const cw = Math.max(1, cr.right - cr.left);
     const ch = Math.max(1, cr.bottom - cr.top);
 
-    // Determine PDF page scale: match underlying imported PDF size if available
     let embeddedSrcPage: PDFEmbeddedPage | undefined;
     let ptScale = PT_PER_UNIT;
 
@@ -134,17 +147,30 @@ export async function exportDocumentToPdf(
       }
     }
 
-    const pdfW = pageW * ptScale;
-    const pdfH = pageH * ptScale;
-    const pdfPage = pdfDoc.addPage([pdfW, pdfH]);
+    geoms.push({
+      page, bounds, pageW, pageH, cw, ch, ptScale,
+      embeddedSrcPage,
+      pdfW: pageW * ptScale,
+      pdfH: pageH * ptScale,
+    });
+  }
+
+  async function renderSlot(
+    pdfPage: PDFPage,
+    g: PageGeom,
+    xOffset: number,
+    slotY: number
+  ): Promise<void> {
+    const { page, bounds, cw, ch, ptScale, embeddedSrcPage, pdfW, pdfH } = g;
+    const cr = page.contentRect;
 
     // 1. Background fill
     const bgArgb = page.marginBgColorArgb ?? page.templateConfig?.fillColor ?? 0xffffffff;
     const bg = toPdfRgb(bgArgb);
     if (bg.alpha > 0) {
       pdfPage.drawRectangle({
-        x: 0,
-        y: 0,
+        x: xOffset,
+        y: slotY,
         width: pdfW,
         height: pdfH,
         color: bg.color,
@@ -152,8 +178,8 @@ export async function exportDocumentToPdf(
       });
     }
 
-    const contentX = (cr.left - bounds.left) * ptScale;
-    const contentYBottom = pdfH - (cr.bottom - bounds.top) * ptScale;
+    const contentX = xOffset + (cr.left - bounds.left) * ptScale;
+    const contentYBottom = slotY + (pdfH - (cr.bottom - bounds.top) * ptScale);
     const contentW = cw * ptScale;
     const contentH = ch * ptScale;
 
@@ -180,8 +206,7 @@ export async function exportDocumentToPdf(
         height: contentH,
       });
     } else {
-      const tplKey =
-        page.templateConfig?.imageRelativePath ?? page.templateConfig?.resName ?? '';
+      const tplKey = page.templateConfig?.imageRelativePath ?? page.templateConfig?.resName ?? '';
       let tplPdfImg = tplKey ? embeddedImgCache.get(`tpl:${tplKey}`) : undefined;
       if (!tplPdfImg && tplKey) {
         const imgEl = await resolveTemplateImage(doc, page);
@@ -215,9 +240,59 @@ export async function exportDocumentToPdf(
         bounds.top,
         pdfH,
         ptScale,
-        embeddedImgCache
+        embeddedImgCache,
+        xOffset,
+        slotY
       );
     }
+  }
+
+  // ── Continuous-scroll mode: pages stacked vertically into one tall sheet ───
+  const PAGE_GAP_PT = 6;
+
+  if (options.continuousScroll && geoms.length > 0) {
+    const totalW = Math.max(...geoms.map((g) => g.pdfW));
+    const totalH =
+      geoms.reduce((acc, g) => acc + g.pdfH, 0) + PAGE_GAP_PT * (geoms.length - 1);
+    const pdfPage = pdfDoc.addPage([totalW, totalH]);
+
+    pdfPage.drawRectangle({
+      x: 0,
+      y: 0,
+      width: totalW,
+      height: totalH,
+      color: rgb(0.95, 0.96, 0.98),
+      opacity: 1,
+    });
+
+    // PDF y-axis is bottom-up; first logical page sits at the top of the sheet.
+    let yTop = totalH;
+
+    for (let i = 0; i < geoms.length; i++) {
+      const g = geoms[i];
+      yTop -= g.pdfH;
+      const xOffset = (totalW - g.pdfW) / 2;
+      await renderSlot(pdfPage, g, xOffset, yTop);
+
+      if (i < geoms.length - 1) {
+        yTop -= PAGE_GAP_PT;
+        pdfPage.drawLine({
+          start: { x: 0, y: yTop + PAGE_GAP_PT / 2 },
+          end: { x: totalW, y: yTop + PAGE_GAP_PT / 2 },
+          thickness: 0.75,
+          color: rgb(0.8, 0.82, 0.88),
+          opacity: 0.75,
+        });
+      }
+    }
+
+    return pdfDoc.save();
+  }
+
+  // ── Normal mode: one PDF page per logical page ────────────────────────────
+  for (const g of geoms) {
+    const pdfPage = pdfDoc.addPage([g.pdfW, g.pdfH]);
+    await renderSlot(pdfPage, g, 0, 0);
   }
 
   return pdfDoc.save();
@@ -232,7 +307,9 @@ async function drawShapeOnPdf(
   originY: number,
   pdfH: number,
   ptScale: number,
-  imgCache: Map<string, PDFImage>
+  imgCache: Map<string, PDFImage>,
+  xOffset = 0,
+  yOffset = 0
 ): Promise<void> {
   // Type 19: Image
   if (shape.shapeType === 19) {
@@ -252,8 +329,8 @@ async function drawShapeOnPdf(
     const h = Math.abs(p1[1] - p0[1]);
     if (w > 0 && h > 0) {
       pdfPage.drawImage(pdfImg, {
-        x: (left - originX) * ptScale,
-        y: pdfH - (top + h - originY) * ptScale,
+        x: xOffset + (left - originX) * ptScale,
+        y: yOffset + pdfH - (top + h - originY) * ptScale,
         width: w * ptScale,
         height: h * ptScale,
       });
@@ -263,13 +340,13 @@ async function drawShapeOnPdf(
 
   // Type 406657105: Table
   if (shape.shapeType === 406657105 && shape.tableInfo && shape.points.length >= 2) {
-    drawTableOnPdf(pdfPage, shape, originX, originY, pdfH, ptScale);
+    drawTableOnPdf(pdfPage, shape, originX, originY, pdfH, ptScale, xOffset, yOffset);
     return;
   }
 
   // Type 41 / 44: Excerpt highlight
   if (shape.shapeType === 41 || shape.shapeType === 44) {
-    drawExcerptOnPdf(pdfPage, shape, originX, originY, pdfH, ptScale);
+    drawExcerptOnPdf(pdfPage, shape, originX, originY, pdfH, ptScale, xOffset, yOffset);
     return;
   }
 
@@ -296,8 +373,8 @@ async function drawShapeOnPdf(
     }
     d += ' Z';
     pdfPage.drawSvgPath(d, {
-      x: 0,
-      y: pdfH,
+      x: xOffset,
+      y: yOffset + pdfH,
       scale: ptScale,
       color,
       opacity: alpha,
@@ -329,8 +406,8 @@ async function drawShapeOnPdf(
     }
 
     pdfPage.drawSvgPath(d, {
-      x: 0,
-      y: pdfH,
+      x: xOffset,
+      y: yOffset + pdfH,
       scale: ptScale,
       borderColor: color,
       borderWidth: widthPts,
@@ -347,7 +424,9 @@ function drawTableOnPdf(
   originX: number,
   originY: number,
   pdfH: number,
-  ptScale: number
+  ptScale: number,
+  xOffset = 0,
+  yOffset = 0
 ): void {
   const ti = shape.tableInfo!;
   const xs = shape.points.map((p) => p.x);
@@ -395,8 +474,8 @@ function drawTableOnPdf(
 
       const cellFill = cell.fillColorEnable && cell.fillColor !== 0 ? toPdfRgb(cell.fillColor) : null;
       pdfPage.drawSvgPath(d, {
-        x: 0,
-        y: pdfH,
+        x: xOffset,
+        y: yOffset + pdfH,
         scale: ptScale,
         color: cellFill?.color,
         opacity: cellFill?.alpha,
@@ -414,7 +493,9 @@ function drawExcerptOnPdf(
   originX: number,
   originY: number,
   pdfH: number,
-  ptScale: number
+  ptScale: number,
+  xOffset = 0,
+  yOffset = 0
 ): void {
   const { color } = toPdfRgb(shape.colorArgb);
   const rects =
@@ -440,8 +521,8 @@ function drawExcerptOnPdf(
     const h = Math.abs(p1[1] - p0[1]);
     if (w <= 0 || h <= 0) continue;
     pdfPage.drawRectangle({
-      x: (left - originX) * ptScale,
-      y: pdfH - (top + h - originY) * ptScale,
+      x: xOffset + (left - originX) * ptScale,
+      y: yOffset + pdfH - (top + h - originY) * ptScale,
       width: w * ptScale,
       height: h * ptScale,
       color,

@@ -21,7 +21,7 @@ import {
 } from './starnote/backupParser';
 import { renderPageToCanvas } from './starnote/canvasRenderer';
 import { exportDocumentToPdf } from './starnote/pdfExporter';
-import type { ExportOptions, StarNoteDocument } from './starnote/types';
+import type { ExportOptions, StarNoteDocument, StarNotePage } from './starnote/types';
 
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -119,6 +119,7 @@ export default function App() {
     includeCover: true,
     includeMargins: true,
     includeExcerpts: true,
+    continuousScroll: true,
   });
 
   const folderInputRef = useRef<HTMLInputElement>(null);
@@ -277,7 +278,7 @@ export default function App() {
           <input
             ref={zipInputRef}
             type="file"
-            accept=".zip"
+            accept=".zip,application/zip,application/x-zip-compressed"
             hidden
             onChange={handleZipSelect}
           />
@@ -377,6 +378,16 @@ export default function App() {
                   />
                   Include PDF Excerpt Highlights
                 </label>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={options.continuousScroll}
+                    onChange={(e) =>
+                      setOptions((o) => ({ ...o, continuousScroll: e.target.checked }))
+                    }
+                  />
+                  Continuous Scroll PDF
+                </label>
                 {emptyCount > 0 && (
                   <label className="checkbox-label">
                     <input
@@ -417,38 +428,40 @@ export default function App() {
       {previewDoc && (
         <div className="modal-backdrop" onClick={() => setPreviewDocId(null)}>
           <div className="modal-header" onClick={(e) => e.stopPropagation()}>
-            <div>
+            <div className="modal-title-group">
               <strong>{previewDoc.title}</strong>
-              <span style={{ marginLeft: 10, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              <span className="modal-meta">
                 {previewDoc.pages.length} pages · {previewDoc.totalActiveShapes} elements
               </span>
             </div>
 
-            <div className="pager">
-              <button
-                className="btn"
-                style={{ padding: '4px 8px' }}
-                disabled={previewPageIdx <= 0}
-                onClick={() => setPreviewPageIdx((i) => Math.max(0, i - 1))}
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
-                Page {previewDoc.pages.length ? previewPageIdx + 1 : 0} / {previewDoc.pages.length}
-              </span>
-              <button
-                className="btn"
-                style={{ padding: '4px 8px' }}
-                disabled={previewPageIdx >= previewDoc.pages.length - 1}
-                onClick={() =>
-                  setPreviewPageIdx((i) => Math.min(previewDoc.pages.length - 1, i + 1))
-                }
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
+            {!options.continuousScroll && (
+              <div className="pager">
+                <button
+                  className="btn"
+                  style={{ padding: '4px 8px' }}
+                  disabled={previewPageIdx <= 0}
+                  onClick={() => setPreviewPageIdx((i) => Math.max(0, i - 1))}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                  Page {previewDoc.pages.length ? previewPageIdx + 1 : 0} / {previewDoc.pages.length}
+                </span>
+                <button
+                  className="btn"
+                  style={{ padding: '4px 8px' }}
+                  disabled={previewPageIdx >= previewDoc.pages.length - 1}
+                  onClick={() =>
+                    setPreviewPageIdx((i) => Math.min(previewDoc.pages.length - 1, i + 1))
+                  }
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
 
-            <div className="actions-row">
+            <div className="actions-row modal-actions">
               <button
                 className="btn btn-primary"
                 disabled={exportingId === previewDoc.id}
@@ -470,9 +483,23 @@ export default function App() {
 
           <div className="modal-body" onClick={(e) => e.stopPropagation()}>
             {previewDoc.pages.length > 0 ? (
-              <div className="preview-canvas-wrap">
-                <canvas ref={previewCanvasRef} />
-              </div>
+              options.continuousScroll ? (
+                <div className="preview-scroll-stack">
+                  {previewDoc.pages.map((page, idx) => (
+                    <PreviewPageCanvas
+                      key={page.id || idx}
+                      doc={previewDoc}
+                      page={page}
+                      pageNumber={idx + 1}
+                      options={options}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="preview-canvas-wrap">
+                  <canvas ref={previewCanvasRef} />
+                </div>
+              )
             ) : (
               <div style={{ color: '#fff', marginTop: 40 }}>
                 This notebook folder has no synced pages (it may have been deleted or only contains
@@ -482,6 +509,54 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function PreviewPageCanvas({
+  doc,
+  page,
+  pageNumber,
+  options,
+}: {
+  doc: StarNoteDocument;
+  page: StarNotePage;
+  pageNumber: number;
+  options: ExportOptions;
+}) {
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [visible, setVisible] = useState(pageNumber <= 3);
+
+  useEffect(() => {
+    if (visible) return;
+    const el = wrapRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '600px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [visible]);
+
+  useEffect(() => {
+    if (!visible || !canvasRef.current) return;
+    const targetWidth = typeof window !== 'undefined' && window.innerWidth < 640 ? 720 : 920;
+    renderPageToCanvas(canvasRef.current, doc, page, options, targetWidth).catch((err) =>
+      console.error('Continuous preview render failed:', err)
+    );
+  }, [visible, doc, page, options]);
+
+  return (
+    <div ref={wrapRef} className="preview-canvas-wrap preview-page-slot">
+      <canvas ref={canvasRef} />
+      <span className="preview-page-tag">Page {pageNumber}</span>
     </div>
   );
 }
