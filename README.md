@@ -5,7 +5,6 @@ Client-side web app that parses StarNote Google Drive sync backups (`StarNote/sy
 ## Run locally
 
 ```bash
-cd webapp
 npm install
 npm run dev
 ```
